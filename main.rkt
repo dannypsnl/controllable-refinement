@@ -47,11 +47,7 @@
     [x (cond
          [(number? x) 'number]
          [(boolean? x) 'bool]
-         [(symbol? x)
-          (let ([t (lookup/type-of env x)])
-            (if (and (procedure? t) (not (parameter? t)))
-                (t)
-                t))]
+         [(symbol? x) (lookup/type-of env x)]
          [else (error (format "unknown form: ~a" x))])]))
 
 (define env (make-hash))
