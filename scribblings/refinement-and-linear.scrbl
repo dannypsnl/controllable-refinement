@@ -1,10 +1,10 @@
 #lang scribble/manual
-@require[@for-label[racket-project
+@require[@for-label[refinement-and-linear
                     racket/base]]
 
-@title{racket-project}
+@title{refinement-and-linear}
 @author{Lîm Tsú-thuàn}
 
-@defmodule[racket-project]
+@defmodule[refinement-and-linear]
 
 Package Description Here
