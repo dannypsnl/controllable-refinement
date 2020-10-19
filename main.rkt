@@ -27,6 +27,8 @@
            [require-prop* (mutable-set)])
        (for ([prop-op prop-operation*])
          (match (prop-do? prop-op)
+           ;;; a bug hiding at here: we shouldn't allow program like the following example
+           ;;; list[a]{+sorted sorted}, which is useless and dangerous
            ['+ (set-add! had-prop* (prop-name prop-op))]
            ['- (set-remove! had-prop* (prop-name prop-op))]
            [#f (set-add! require-prop* (prop-name prop-op))]))
