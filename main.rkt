@@ -55,10 +55,13 @@
          [else (error (format "unknown form: ~a" x))])]))
 
 (define env (make-hash))
+; sort : list{+sorted} -> void
 (extend/env env 'sort (ty:-> (list (ty:prop 'list (list (prop '+ 'sorted))))
                              (ty:prop 'void '())))
+; insert : list{-sorted} -> any -> void
 (extend/env env 'insert (ty:-> (list (ty:prop 'list (list (prop '- 'sorted))) (ty:prop 'any '()))
                                (ty:prop 'void '())))
+; binary-search : list{sorted} -> any
 (extend/env env 'binary-search (ty:-> (list (ty:prop 'list (list (prop #f 'sorted))))
                                       (ty:prop 'any '())))
 (extend/env env 'test-list (ty:prop 'list '()))
