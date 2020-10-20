@@ -1,1 +1,6 @@
 katex/
+
+*.log
+*.aux
+*.out
+refinement-and-linear.tex
