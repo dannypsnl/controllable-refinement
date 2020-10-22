@@ -1,8 +1,8 @@
 #lang info
-(define collection "refinement-and-linear")
+(define collection "controllable-refinement")
 (define deps '("base"))
 (define build-deps '("scribble-lib" "racket-doc" "rackunit-lib" "scribble-math"))
-(define scribblings '(("scribblings/refinement-and-linear.scrbl" ())))
+(define scribblings '(("scribblings/controllable-refinement.scrbl" ())))
 (define pkg-desc "Description Here")
 (define version "0.0")
 (define pkg-authors '(dannypsnl))
