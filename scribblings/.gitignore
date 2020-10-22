@@ -3,4 +3,4 @@ katex/
 *.log
 *.aux
 *.out
-refinement-and-linear.tex
+controllable-refinement.tex
