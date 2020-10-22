@@ -2,7 +2,7 @@
 @require[@for-label[racket/base]
          scribble-math]
 
-@title{refinement-and-linear}
+@title{controllable-refinement}
 @author{Lîm Tsú-thuàn}
 
 The type system based on @bold{STLC}, introducing user-controllable type refinement. Meta type variables are @${A}, @${B}. Meta predicate variable is @${P}. A type with predicate write as @${A_P}, introduce predicate write as @${P_+}, eliminate write as @${P_-}.
