@@ -1,4 +1,4 @@
-# refinement and linear
+# controllable-refinement
 
 Refinement type, which introduces predicate into type system and helpful for real programming task. In this repository, I'm going to show a refinement type system with user-controlled predicate, such predicate provides more advanced ability.
 
