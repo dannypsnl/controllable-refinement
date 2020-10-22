@@ -5,7 +5,7 @@
 @title{controllable-refinement}
 @author{Lîm Tsú-thuàn}
 
-The type system based on @bold{STLC}, introducing user-controllable type refinement. Meta type variables are @${A}, @${B}. Meta predicate variable is @${P}. A type with predicate write as @${A_P}, introduce predicate write as @${P_+}, eliminate write as @${P_-}.
+The type system based on @bold{STLC}, introducing user-controllable type refinement. Meta type variables are @${A}, @${B}. Meta predicate variable is @${P}. A type with predicate write as @${A_P}, introduce predicate write as @${P_+}, eliminate write as @${P_-}, @${P_{?+}} for anyway introduce, @${P_{?-}} for anyway eliminate.
 
 @itemlist[
 @item{verify-predicate @$${
@@ -18,25 +18,41 @@ The type system based on @bold{STLC}, introducing user-controllable type refinem
 
 @item{introduce-predicate @$${
 \frac{
-    \Gamma , f : A_{P_+} \rightarrow B , x : A
+    \Gamma , f : (p : A_{P_{+}}) \rightarrow B , x : A
 }{
-    f x : B , x : A_{P}
-}
-\frac{
-    \Gamma , f : A_{P_+} \rightarrow B , x : A_{P}
-}{
-    f x : B , x : A_{P}
+    f x : B , x : A_{P}, p : A
 }
 }}
 
 @item{eliminate-predicate @$${
 \frac{
-    \Gamma , f : A_{P_-} \rightarrow B , x : A_{P}
+    \Gamma , f : (p : A_{P_{-}}) \rightarrow B , x : A_{P}
+}{
+    f x : B , x : A , p : A_{P}
+}
+}}
+
+@item{anyway-introduce-predicate @$${
+\frac{
+    \Gamma , f : A_{P_{?+}} \rightarrow B , x : A
+}{
+    f x : B , x : A_{P}
+}
+\frac{
+    \Gamma , f : A_{P_{?+}} \rightarrow B , x : A_{P}
+}{
+    f x : B , x : A_{P}
+}
+}}
+
+@item{anyway-eliminate-predicate @$${
+\frac{
+    \Gamma , f : A_{P_{?-}} \rightarrow B , x : A_{P}
 }{
     f x : B , x : A
 }
 \frac{
-    \Gamma , f : A_{P_-} \rightarrow B , x : A
+    \Gamma , f : A_{P_{?-}} \rightarrow B , x : A
 }{
     f x : B , x : A
 }
