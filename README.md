@@ -6,14 +6,23 @@ Implementation was in `main.rkt`, this version based on **STLC**, and basically 
 
 ### Description
 
-In this system, the most important is **property**, user-controlled predicate. With or without polymorphism is not important, but for convience, let's introduces it to provide more example. A base type must be `T`, a polymorphism use application form in **racket** `[T a, b, c, ...]` where `T` is type and `a`, `b`, `c` are type variable, finally, a type with property use `(T {P1, P2, P3, ...})`. Polymorphism with property is valid. `+ Property` would introduce new property if it doesn't existed, `- Property` do remove if existed that property. Without `+/-` then the property is required. In this case, we ensure that `binary-search` would only get `sorted` list as expected.
+In this system, the most important is **property**, user-controllable predicate. Polymorphism was introduced to provide more example for convience. A base type must be `T`, a polymorphism use application form in **racket** `[T a, b, c, ...]` where `T` is type and `a`, `b`, `c` are type variable, finally, a type with property use `(T {P1, P2, P3, ...})`, predicate can have `+`, `?+`, `-`, and `?-` these operations. Formal rules can be found in this [pdf](https://github.com/dannypsnl/controllable-refinement/blob/develop/scribblings/controllable-refinement.pdf).
 
 #### Example
 
 The first example is sorted property, `sort` function makes a list became `sorted`, but `insert` could break this property.
 
 ```
-(: sort (-> (list {+sorted} a) void))
-(: insert (-> (list {-sorted} a) a void))
+(: sort (-> (list {?+sorted} a) void))
+(: insert (-> (list {?-sorted} a) a void))
 (: binary-search (-> (list {sorted} a) a))
+```
+
+Second example is making the ownership system.
+
+```
+(: println (-> (string {-owned}) void))
+(: hello-world string{owned})
+(println hello-world)
+(println hello-world) ;;; compile error, `hello-world` is not `owned` now.
 ```
