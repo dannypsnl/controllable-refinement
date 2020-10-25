@@ -1,6 +1,6 @@
 #lang racket
 
-(require racket/set)
+(require racket/hash)
 
 ;;; helpers
 (define (lookup/type-of env v)
@@ -13,8 +13,6 @@
   (ty prop*)
   #:mutable
   #:transparent)
-;;; prop, do can be: '+, '-, and #f
-(struct prop (do? name) #:transparent)
 
 (define (ty-> #:env (env (make-hash)) exp expect-ty)
   (ty=? #:env env expect-ty (<-ty exp #:env env)))
@@ -23,19 +21,26 @@
     [({ty:prop ty prop-operation*} {ty:prop ty2 prop-have*})
      (unless (equal? ty ty2)
        (error 'type-check "expect: ~a, get: ~a" expect-ty actual-ty))
-     (let ([had-prop* (list->mutable-set prop-have*)]
-           [require-prop* (mutable-set)])
-       (for ([prop-op prop-operation*])
-         (match (prop-do? prop-op)
-           ;;; a bug hiding at here: we shouldn't allow program like the following example
-           ;;; list[a]{+sorted sorted}, which is useless and dangerous
-           ['+ (set-add! had-prop* (prop-name prop-op))]
-           ['- (set-remove! had-prop* (prop-name prop-op))]
-           [#f (set-add! require-prop* (prop-name prop-op))]))
-       (unless (subset? require-prop* had-prop*)
-         (set-subtract! require-prop* had-prop*)
-         (error 'type-check "~a is not ~a" actual-ty (set->list require-prop*)))
-       (set-ty:prop-prop*! actual-ty (set->list had-prop*)))]))
+     (let ([had-prop* (make-hash)]
+           [require-prop* (make-hash)])
+       (hash-union! had-prop* prop-have*)
+       (for ([prop-name (hash-keys prop-operation*)]
+             [prop-do (hash-values prop-operation*)])
+         (match prop-do
+           ['?+ (hash-set! had-prop* prop-name 'require)]
+           ['?- (hash-remove! had-prop* prop-name)]
+           ['+ (unless (not (hash-ref had-prop* prop-name #f))
+                 (error 'type-check "~a should not have ~a" actual-ty prop-name))
+               (hash-set! had-prop* prop-name 'require)]
+           ['- (unless (hash-ref had-prop* prop-name #f)
+                 (error 'type-check "~a lacks ~a" actual-ty prop-name))
+               (hash-remove! had-prop* prop-name)]
+           ['require (hash-set! require-prop* prop-name 'require)]))
+       (unless (hash-keys-subset? require-prop* had-prop*)
+         (for ([prop-to-remove (hash-keys had-prop*)])
+           (hash-remove! require-prop* prop-to-remove))
+         (error 'type-check "~a lacks ~a" actual-ty (hash-keys require-prop*)))
+       (set-ty:prop-prop*! actual-ty had-prop*))]))
 (define (<-ty exp #:env env)
   (match exp
     [`{,f ,arg* ...}
@@ -50,20 +55,32 @@
          [(symbol? x) (lookup/type-of env x)]
          [else (error (format "unknown form: ~a" x))])]))
 
-(define env (make-hash))
-; sort : list{+sorted} -> void
-(extend/env env 'sort (ty:-> (list (ty:prop 'list (list (prop '+ 'sorted))))
-                             (ty:prop 'void '())))
-; insert : list{-sorted} -> any -> void
-(extend/env env 'insert (ty:-> (list (ty:prop 'list (list (prop '- 'sorted))) (ty:prop 'any '()))
-                               (ty:prop 'void '())))
-; binary-search : list{sorted} -> any
-(extend/env env 'binary-search (ty:-> (list (ty:prop 'list (list (prop #f 'sorted))))
-                                      (ty:prop 'any '())))
-(extend/env env 'test-list (ty:prop 'list '()))
-(extend/env env 'test-element (ty:prop 'any '()))
+(let ()
+  (define env (make-hash))
+  ; sort : (list {?+sorted}) -> void
+  (extend/env env 'sort (ty:-> (list (ty:prop 'list #hash((sorted . ?+))))
+                               (ty:prop 'void #hash())))
+  ; insert : (list {?-sorted}) -> any -> void
+  (extend/env env 'insert (ty:-> (list (ty:prop 'list #hash((sorted . ?-))) (ty:prop 'any #hash()))
+                                 (ty:prop 'void #hash())))
+  ; binary-search : (list {sorted}) -> any
+  (extend/env env 'binary-search (ty:-> (list (ty:prop 'list #hash((sorted . require))))
+                                        (ty:prop 'any #hash())))
+  (extend/env env 'test-list (ty:prop 'list #hash()))
+  (extend/env env 'test-element (ty:prop 'any #hash()))
 
-(ty-> '(sort test-list) (ty:prop 'void '()) #:env env)
-;;; uncomment this one or reorder sort/binary-search would be type error
-;(ty-> '(insert test-list) (ty:prop 'void '()) #:env env)
-(ty-> '(binary-search test-list) (ty:prop 'any '()) #:env env)
+  (ty-> '(sort test-list) (ty:prop 'void #hash()) #:env env)
+  ;;; uncomment this one or reorder sort/binary-search would be type error
+  #;(ty-> '(insert test-list) (ty:prop 'void #hash()) #:env env)
+  (ty-> '(binary-search test-list) (ty:prop 'any #hash()) #:env env))
+
+(let ()
+  (define env (make-hash))
+  ; println : (string {-owned}) -> void
+  (extend/env env 'println (ty:-> (list (ty:prop 'string #hash((owned . -))))
+                                  (ty:prop 'void #hash())))
+  (extend/env env 'hello-world (ty:prop 'string #hash((owned . require))))
+
+  (ty-> '(println hello-world) (ty:prop 'void #hash()) #:env env)
+  ;;; uncomment this one would cause a type error
+  #;(ty-> '(println hello-world) (ty:prop 'void #hash()) #:env env))
