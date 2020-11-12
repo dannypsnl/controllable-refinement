@@ -2,17 +2,19 @@
 
 (require racket/hash)
 
-;;; helpers
+;;; environment
+(define (make-env)
+  (make-hash))
 (define (lookup/type-of env v)
   (hash-ref env v))
 (define (extend/env env v t)
   (hash-set! env v t))
-;;; types
+;;; type
 (struct ty (prop*) #:mutable #:transparent)
 (struct ty:-> ty (p* ret) #:mutable #:transparent)
 (struct ty:base ty (name) #:mutable #:transparent)
 
-(define (ty-> #:env (env (make-hash)) exp expect-ty)
+(define (ty-> #:env (env (make-env)) exp expect-ty)
   (ty=? #:env env expect-ty (<-ty exp #:env env)))
 (define (ty=? #:env env expect-ty actual-ty [check-prop? #t])
   (unless
@@ -20,6 +22,7 @@
         [({ty:base _ ty} {ty:base _ ty2})
          (equal? ty ty2)]
         [({ty:-> _ p1* r1} {ty:-> _ p2* r2})
+         ;;; when ty=? is not checking application, affect to property should be avoid
          (and (andmap (λ (p1 p2) (ty=? p1 p2 #f #:env env)) p1* p2*) (ty=? r1 r2 #f #:env env))])
     (error 'type-check "expect: ~a, get: ~a" expect-ty actual-ty))
   (when check-prop?
@@ -60,7 +63,7 @@
          [else (error (format "unknown form: ~a" x))])]))
 
 (let ()
-  (define env (make-hash))
+  (define env (make-env))
   ; sort : (list {?+sorted}) -> void
   (extend/env env 'sort (ty:-> #hash() (list (ty:base #hash((sorted . ?+)) 'list))
                                (ty:base #hash() 'void)))
@@ -79,7 +82,7 @@
   (ty-> '(binary-search test-list) (ty:base #hash() 'any) #:env env))
 
 (let ()
-  (define env (make-hash))
+  (define env (make-env))
   ; println : (string {-owned}) -> void
   (extend/env env 'println (ty:-> #hash() (list (ty:base #hash((owned . -)) 'string))
                                   (ty:base #hash() 'void)))
