@@ -60,3 +60,20 @@ The type system based on @bold{STLC}, introducing user-controllable type refinem
 ]
 
 Notice that it can be extended to with polymorphism without changing previous definition.
+
+@section{extension: related predicate}
+
+Sometime we would like to update related predicate, for example:
+
+@racketblock[
+(: open (-> (file {writable readable})))
+(: write (-> (file {writable}) void))
+(: close (-> (file {+close}) void))
+
+(let ([file (open "xxx")])
+  (write file "hello")
+  (close file)
+  (write file "hello")) ;;; error
+]
+
+where @code{+close} also means @code{?-readable ?-writable}. This extension is quite simple, we can add related predicate information into environment, rewrite predicates of type while parsing type.
