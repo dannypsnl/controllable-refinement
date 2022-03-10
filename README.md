@@ -12,7 +12,7 @@ In this system, the most important is **property**, user-controllable predicate.
 
 The first example is sorted property, `sort` function makes a list became `sorted`, but `insert` could break this property.
 
-```
+```racket
 (: sort (-> (list {?+sorted} a) void))
 (: insert (-> (list {?-sorted} a) a void))
 (: binary-search (-> (list {sorted} a) a))
@@ -20,7 +20,7 @@ The first example is sorted property, `sort` function makes a list became `sorte
 
 Second example is making the ownership system.
 
-```
+```racket
 (: println (-> (string {-owned}) void))
 (: hello-world string{owned})
 (println hello-world)
